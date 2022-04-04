@@ -21,42 +21,56 @@ function checksExistsUserAccount(request, response, next) {
     return next();
 }
 
-app.post('/users', (request, response) => {
+
+
+function checkIqualsUserAccount (request, response, next ) {
+const { username } = request.body;
+
+const user = users.find(( user ) => user.username === username)
+
+if(user){
+    return response.status(400).json({error: 'usuario já existe'})
+    }else{
+      next();
+    }
+}
+
+app.post('/users',checkIqualsUserAccount, (request, response) => {
   const {name, username } = request.body;
   const id = uuidv4();
-  users.push({
+ 
+const user = {
   id,
   name,
   username,
-  todos : [],
-  });
-  return response.status(201).json({mensage: "user inserido com sucesso", users})
+  todos: []
+}
+
+  users.push(user);
+  return response.status(201).json(user)
 });
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
- const { todos } = request.user;
+ const { user } = request;
 
-  return response.status(200).json({mensage : "tarefas do usuario",todos})
+  return response.json(user.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, (request, response) => {
-  // Complete aqui
- const { title,deadline } = request.body;
  const { user } = request;
+ const { title, deadline } = request.body;
 
-  const register = users.find((register) => register.username === user.username)
- 
-  const addToDo = {
+
+  const todo = {
     id: uuidv4(),
     title,
     done: false,
     deadline: new Date(deadline),
     created_at: new Date()
-
   }
  
-  register.todos.push(addToDo);
-  return response.status(201).json({mensage: "atividade inserida com sucesso", register})
+  user.todos.push(todo);
+  return response.status(201).json(todo);
  
 });
 
